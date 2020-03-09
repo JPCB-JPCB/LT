@@ -1,0 +1,4104 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "LifeTime REST API",
+    "description": "The Deployment API allows you to manage applications, modules, environments, deployments, users, team and roles of your OutSystems infrastructure.",
+    "version": "v2"
+  },
+  "basePath": "/lifetimeapi/rest/v2",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/applications/": {
+      "get": {
+        "tags": [
+          "/applications"
+        ],
+        "description": "Returns a list of applications that exist in the infrastructure.",
+        "operationId": "Applications_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "IncludeModules",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the modules are also returned. The default value is false."
+          },
+          {
+            "name": "IncludeEnvStatus",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the application status per environment is also returned. The default value is false."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of Application records including AppStatusInEnv sub-lists, if requested.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Application"
+              },
+              "description": "A list of Application records including AppStatusInEnv sub-lists, if requested."
+            }
+          },
+          "204": {
+            "description": "No applications available in the infrastructure."
+          },
+          "400": {
+            "description": "Failed to retrieve applications because IncludeModules was requested but IncludeEnvStatus was not, or invalid request when listing all applications.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to list the applications.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{ApplicationKey}/": {
+      "get": {
+        "tags": [
+          "/applications"
+        ],
+        "description": "Returns the details of a given application.",
+        "operationId": "Applications_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the desired application."
+          },
+          {
+            "name": "IncludeModules",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the modules details are also retrieved. The default value is false."
+          },
+          {
+            "name": "IncludeEnvStatus",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the application status per environment is also returned. The default value is false."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An Application record including an AppStatusInEnv sub-list, if requested.",
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          },
+          "400": {
+            "description": "Failed to retrieve applications because IncludeModules and IncludeEnvStatus parameters were incorrect.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Failed listing all applications because user has insufficient permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed getting running applications because one of the environments was not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the application.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{ApplicationKey}/versions/": {
+      "get": {
+        "tags": [
+          "/applications"
+        ],
+        "description": "Returns a list of versions of a given application.",
+        "operationId": "Applications_Versions_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the desired application."
+          },
+          {
+            "name": "ChangeLogFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": "",
+            "description": "Optional filter. If present, only versions containing this string in the change log will be returned."
+          },
+          {
+            "name": "MaximumVersionsToReturn",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-example": 0,
+            "format": "int32",
+            "description": "The maximum number of versions to return. The default value is 5."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of ApplicationVersion records.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ApplicationVersion_v2"
+              },
+              "description": "A list of ApplicationVersion records."
+            }
+          },
+          "400": {
+            "description": "Invalid request due to invalid max versions to return (less than 0).",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the application with key <ApplicationKey>. The user does not have the required permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the application with key <ApplicationKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to list the application versions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{ApplicationKey}/versions/{VersionKey}/": {
+      "delete": {
+        "tags": [
+          "/applications"
+        ],
+        "description": "Discards an application version, if possible. Running versions, or versions used in Deployments cannot be deleted.",
+        "operationId": "Applications_Versions_Delete",
+        "parameters": [
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application whose version to be deleted."
+          },
+          {
+            "name": "VersionKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application version to be deleted."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Application version successfully deleted."
+          },
+          "403": {
+            "description": "Service Account doesn't have permissions to delete the specified application version.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Application or application version not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to delete application version <VersionKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "/applications"
+        ],
+        "description": "Returns the details of a given version of the specified application.",
+        "operationId": "Applications_Versions_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application whose version is being requested."
+          },
+          {
+            "name": "IncludeModules",
+            "in": "query",
+            "required": true,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the modules details are also retrieved. The default value is false."
+          },
+          {
+            "name": "VersionKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the desired application version."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An ApplicationVersion record.",
+            "schema": {
+              "$ref": "#/definitions/ApplicationVersion_v2"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the application with key <ApplicationKey>. The user does not have the required permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the application with key <ApplicationKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the application version.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{ApplicationKey}/versions/{VersionKey}/content/": {
+      "get": {
+        "tags": [
+          "/applications"
+        ],
+        "description": "Returns a link where the binary file for a given application version can be downloaded. The link will expire in 60 minutes.",
+        "operationId": "Applications_Versions_Download",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application for which to get the binary file link."
+          },
+          {
+            "name": "VersionKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application version for which to get the binary file link."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The link for the application binary file.",
+            "schema": {
+              "$ref": "#/definitions/DownloadLink"
+            },
+            "headers": {
+              "Expires": {
+                "type": "string",
+                "format": "date-time",
+                "x-example": "2014-12-31T23:59:59.938Z",
+                "description": "The expiration date and time of the returned link."
+              }
+            }
+          },
+          "204": {
+            "description": "No binary available for given keys."
+          },
+          "400": {
+            "description": "The request is invalid for the given keys (Application:<ApplicationKey>; ApplicationVersionKey <ApplicationVersionKey>).",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "User doesn’t have permissions for the given keys (Application:<ApplicationKey>; ApplicationVersionKey <ApplicationVersionKey>).",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the application with key <ApplicationKey> or the application version with key <ApplicationVersionKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to download the oap of the application version.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/deployments/": {
+      "post": {
+        "tags": [
+          "/deployments"
+        ],
+        "description": "Creates a deployment to a target environment. An optional list of applications to include in the deployment can be specified. The input is a subset of deployment object.",
+        "operationId": "Deployments_Create",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "DeploymentData",
+            "in": "body",
+            "description": "A Deployment record.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplicationVersionKeyDeploymentZoneKeyRecordListTextTextTextRecord"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployment successfully created.",
+            "schema": {
+              "type": "string",
+              "default": "",
+              "description": "The key of the newly created deployment."
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Invalid user permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Source or target environment not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to create deployment from environment <SourceEnvironmentKey> to environment <TargetEnvironmentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "/deployments"
+        ],
+        "description": "Returns a list of deployments ordered by creation date, from newest to oldest.",
+        "operationId": "Deployments_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "MinDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date",
+            "x-example": "2014-12-31",
+            "description": "The minimum creation date of the deployments to return. The default value is 1 week before the current date."
+          },
+          {
+            "name": "MaxDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date",
+            "x-example": "2014-12-31",
+            "description": "The maximum creation date of the deployments to return. The default value is the current date."
+          },
+          {
+            "name": "TargetEnvironmentKey",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": "",
+            "description": "The key of the target environment to return the deployments from. If the user does not have access to the environment, the list returned will be empty. If no environment key is passed, the list will not be filtered by any target environment."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployments list successfully retrieved.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Deployment_v2"
+              },
+              "description": "A list of Deployment records."
+            }
+          },
+          "204": {
+            "description": "There are no deployments created between <MinDate> and <MaxDate> for environment key <TargetEnvironmentKey>."
+          },
+          "400": {
+            "description": "Invalid request for list of deployments created between <MinDate> and <MaxDate> for environment key <TargetEnvironmentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "User doesn't have access to any environment.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to list the deployments.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/deployments/{DeploymentKey}/": {
+      "delete": {
+        "tags": [
+          "/deployments"
+        ],
+        "description": "Discards a deployment, if possible. Only deployments whose state is “saved” can be deleted.",
+        "operationId": "Deployments_Delete",
+        "parameters": [
+          {
+            "name": "DeploymentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the deployment to delete."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deployment successfully deleted."
+          },
+          "400": {
+            "description": "Deployment with key <DeploymentKey> cannot be deleted",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Service Account doesn't have permissions to the deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Deployment with key <DeploymentKey> not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to delete deployment <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "/deployments"
+        ],
+        "description": "Updates a given deployment. An optional list of applications to include in the deployment can be specified. The input is a subset of deployment object.",
+        "operationId": "Deployments_Update",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "DeploymentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the deployment to update."
+          },
+          {
+            "name": "DeploymentData",
+            "in": "body",
+            "description": "The deployment information to update.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplicationVersionKeyDeploymentZoneKeyRecordListTextTextTextRecord"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployment successfully updated.",
+            "schema": {
+              "$ref": "#/definitions/DeploymentData_v2"
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Invalid user permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Deployment plan not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to update deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "/deployments"
+        ],
+        "description": "Returns the details of a given deployment. The returned information contains the included applications and the possible conflicts that can arise from the deployment of the current applications.",
+        "operationId": "Deployments_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "DeploymentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the desired deployment."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployment details successfully retrieved.",
+            "schema": {
+              "$ref": "#/definitions/ApplicationConflictListTextListDeployment_v2Record"
+            }
+          },
+          "403": {
+            "description": "User doesn't have permissions to the deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Deployment with key <DeploymentKey> not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to access the details of deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/deployments/{DeploymentKey}/{Command}/": {
+      "post": {
+        "tags": [
+          "/deployments"
+        ],
+        "description": "Executes the given command in a specified deployment. The allowed commands are “start”, “continue” and “abort”.",
+        "operationId": "Deployments_ExecuteCommand",
+        "parameters": [
+          {
+            "name": "DeploymentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the deployment where the command will be executed."
+          },
+          {
+            "name": "Command",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The command to execute. One of “start”, “continue” or “abort”. "
+          },
+          {
+            "name": "RedeployOutdated",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "If True, outdated applications in the target environment will be redeployed."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Command <Command> executed successfully for deployment <DeploymentKey>."
+          },
+          "400": {
+            "description": "Command <Command> can't be executed for deployment <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Service Account doesn't have permissions to the deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Deployment with key <DeploymentKey> not found, or command not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to execute command <Command> for deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/deployments/{DeploymentKey}/status/": {
+      "get": {
+        "tags": [
+          "/deployments"
+        ],
+        "description": "Returns the details of a given deployment execution, including the deployment status and messages.",
+        "operationId": "Deployments_GetStatus",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "DeploymentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the deployment whose status is being requested."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployment status successfully retrieved.",
+            "schema": {
+              "$ref": "#/definitions/DeploymentMessageListTextTextRecord"
+            }
+          },
+          "403": {
+            "description": "User doesn't have permissions to the deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Deployment with key <DeploymentKey> not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the status of the deployment with key <DeploymentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/": {
+      "get": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Lists all the environments in the infrastructure.",
+        "operationId": "Environments_List",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Environments list successfully retrieved.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Environment"
+              },
+              "description": "Environments list successfully retrieved."
+            }
+          },
+          "204": {
+            "description": "No environments found."
+          },
+          "500": {
+            "description": "Failed to list the environments.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/{EnvironmentKey}/": {
+      "get": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Returns the details of a given environment.",
+        "operationId": "Environments_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the desired environment."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Environment details successfully retrieved.",
+            "schema": {
+              "$ref": "#/definitions/Environment"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the environment with key: <EnvironmentKey>. The user does not have the required permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the environment with key: <EnvironmentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to access the details of environment.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/{EnvironmentKey}/applications/": {
+      "get": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Returns information about the running versions of all applications in a given environment.",
+        "operationId": "Environments_GetRunningApps",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the environment whose list of running applications is being requested."
+          },
+          {
+            "name": "IncludeModules",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the modules details are also retrieved. The default value is false."
+          },
+          {
+            "name": "IncludeEnvStatus",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the applications’ status information in the environment is included in the result. The default value is false."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Applications list for the given environment successfully retrieved.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Application"
+              },
+              "description": "Applications list for the given environment successfully retrieved."
+            }
+          },
+          "204": {
+            "description": "No applications found in environment with key <EnvironmentKey>."
+          },
+          "400": {
+            "description": "Failed to retrieve applications published in environment because IncludeModules and IncludeEnvStatus parameters were incorrect, or Invalid request when getting running applications for environment with key <EnvironmentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the running applications for environment with key <EnvironmentKey> because user has insufficient permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve running applications for environment with key <EnvironmentKey> because it was not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Creates a new application in the environment.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the environment to create the application."
+          },
+          {
+            "name": "NewApplication",
+            "in": "body",
+            "description": "A structure holding the name, description and other attributes of the new application.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NewApplication"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The key of the newly created application.",
+            "schema": {
+              "$ref": "#/definitions/TextRecord2"
+            }
+          },
+          "400": {
+            "description": "Failed to create application due to invalid application name, runtime kind, template, color or team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Failed to create an application because user has insufficient permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to create an application for environment with key <EnvironmentKey> because it was not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to create application due to an internal error.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/{EnvironmentKey}/applications/{ApplicationKey}/": {
+      "get": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Returns information about the running version of the specified application in a given environment.",
+        "operationId": "Environments_GetRunningApp",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the environment from which to get the running application details."
+          },
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application whose details are being requested."
+          },
+          {
+            "name": "IncludeEnvStatus",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the applications’ status information in the environment is included in the result. The default value is false."
+          },
+          {
+            "name": "IncludeModules",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the modules details are also retrieved. The default value is false."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Application information successfully retrieved.",
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          },
+          "400": {
+            "description": "Request asked for Modules but not for Status.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "User doesn’t have permissions for the given keys (EnvironmentKey:<EnvironmentKey>; Application:<ApplicationKey>).",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the environment with key <EnvironmentKey> or the application with key <ApplicationKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to access the running version of an application.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/{EnvironmentKey}/applications/{ApplicationKey}/content/": {
+      "get": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Returns a link where the binary file for a given application can be downloaded. The link will expire in 60 minutes.",
+        "operationId": "Environments_DownloadRunningApp",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the environment from which to get the application binary file link."
+          },
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application for which to get the binary file link."
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": "",
+            "description": "The type of binary file to return, when applicable. One of “oap”, “apk” or “ipa”."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary file download link successfully retrieved.",
+            "schema": {
+              "$ref": "#/definitions/DownloadLink"
+            },
+            "headers": {
+              "Expires": {
+                "type": "string",
+                "format": "date-time",
+                "x-example": "2014-12-31T23:59:59.938Z",
+                "description": "The expiration date and time of the returned link."
+              }
+            }
+          },
+          "204": {
+            "description": "No binary available for given type and keys.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "400": {
+            "description": "The required type <Type> is invalid for given keys (EnvironmentKey:<EnvironmentKey>; Application:<ApplicationKey>).",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "User doesn’t have permissions for the given keys (EnvironmentKey:<EnvironmentKey>; Application:<ApplicationKey>).",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the environment with key <EnvironmentKey> or the application with key <ApplicationKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to download <Type> of an application.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/{EnvironmentKey}/applications/{ApplicationKey}/versions/": {
+      "post": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Creates a new version of the application based on the current running application.",
+        "operationId": "Environments_Applications_Versions_Create",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the environment from which to get the application."
+          },
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the application for which to generate a new version."
+          },
+          {
+            "name": "ApplicationVersionCreate",
+            "in": "body",
+            "description": "A structure holding the new version name for the application and for its native applications, if applicable.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplicationVersionCreate"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Application version successfully created.",
+            "schema": {
+              "$ref": "#/definitions/TextRecord"
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Invalid user permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Environment or application not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to tag an application, or Failed to create a new version for application <ApplicationName>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/{EnvironmentKey}/deploymentzones/": {
+      "get": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Returns information about the deployment zones available in a given environment.",
+        "operationId": "Environments_GetDeploymentZones",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the environment from which to get the running application details."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployment zone information successfully retrieved.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DeploymentZone_v2"
+              },
+              "description": "Deployment zone information successfully retrieved."
+            }
+          },
+          "400": {
+            "description": "Failed to access the deployment zones of environment.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the deployment zones of environment <EnvironmentName> (key: <EnvironmentKey>). Error: The user does not have the required permissions, or Feature not Licensed.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the deployment zones of environment with key: <EnvironmentKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to access the deployment zones of environment.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/environments/{EnvironmentKey}/templates/": {
+      "get": {
+        "tags": [
+          "/environments"
+        ],
+        "description": "Returns information about the templates available in a given environment.",
+        "operationId": "Environments_GetTemplates",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "EnvironmentKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the environment from which to get the running application details."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of Templates.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Template"
+              },
+              "description": "A list of Templates."
+            }
+          },
+          "400": {
+            "description": "Environment doesn't support list templates.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "User doesn't have permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Environment not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/modules/": {
+      "get": {
+        "tags": [
+          "/modules"
+        ],
+        "description": "Returns a list of modules that exist in the infrastructure.",
+        "operationId": "Modules_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "IncludeEnvStatus",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "When set to true, the module status per environment is also returned. The default value is false."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Modules list successfully retrieved.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Module"
+              },
+              "description": "Modules list successfully retrieved."
+            }
+          },
+          "204": {
+            "description": "No modules found in the infrastructure."
+          },
+          "500": {
+            "description": "Failed to list modules.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/modules/{ModuleKey}/": {
+      "get": {
+        "tags": [
+          "/modules"
+        ],
+        "description": "Returns the details of a given module.",
+        "operationId": "Modules_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ModuleKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "Key of the module to list the details from."
+          },
+          {
+            "name": "IncludeEnvStatus",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-example": false,
+            "description": "Boolean to indicate if status per env should be returned. Default is false"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Module details successfully retrieved.",
+            "schema": {
+              "$ref": "#/definitions/Module"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the module with key: <ModuleKey>. The user does not have the required permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the module with key: <ModuleKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the module with key <ModuleKey>",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/modules/{ModuleKey}/versions/": {
+      "get": {
+        "tags": [
+          "/modules"
+        ],
+        "description": "Returns a list of versions of a given module.",
+        "operationId": "ModuleVersions_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ModuleKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The module from where to retrieve the versions from."
+          },
+          {
+            "name": "MaximumVersionsToReturn",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-example": 0,
+            "format": "int32",
+            "description": "Maximum number of versions to return. Default is 5."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of module versions successfully retrieved.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ModuleVersion_v2"
+              },
+              "description": "List of module versions successfully retrieved."
+            }
+          },
+          "400": {
+            "description": "Invalid request due to invalid max versions to return (less than 0).",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the module with key: <ModuleKey>. The user does not have the required permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the module with key: <ModuleKey>.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to list module versions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/modules/{ModuleKey}/versions/{ModuleVersionKey}/": {
+      "get": {
+        "tags": [
+          "/modules"
+        ],
+        "description": "Returns the details of a given module version.",
+        "operationId": "ModuleVersion_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ModuleKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The module from where to retrieve the versions from."
+          },
+          {
+            "name": "ModuleVersionKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "Key of the module version to return."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Module version details successfully retrieved.",
+            "schema": {
+              "$ref": "#/definitions/ModuleVersion_v2"
+            }
+          },
+          "403": {
+            "description": "Failed to retrieve the module with key: <ModuleKey>. The user does not have the required permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Failed to retrieve the module with key: <ModuleKey>, or Failed to retrieve the module version with key: <ModuleKey>",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Failed to access the details of a module version.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/roles/": {
+      "get": {
+        "tags": [
+          "/roles"
+        ],
+        "description": "Lists all the roles.",
+        "operationId": "Roles_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "IncludeEnvPermissions",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of environment permissions for each role."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Roles",
+            "schema": {
+              "$ref": "#/definitions/Role"
+            }
+          },
+          "403": {
+            "description": "User has no permissions to retrieve roles list.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "/roles"
+        ],
+        "description": "Creates a role with the specified permissions.",
+        "operationId": "Roles_Create",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "Role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Role"
+            },
+            "description": "The role to be created."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Role created with success.",
+            "schema": {
+              "type": "string",
+              "default": "",
+              "description": "The key of the newly created role."
+            }
+          },
+          "400": {
+            "description": "Failed to create role because invalid role name, role is protected, wrong combination of infrastructure and manage teams flags or not defined/wrong permissions for all environments.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to create a new role.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/roles/{RoleKey}/": {
+      "get": {
+        "tags": [
+          "/roles"
+        ],
+        "description": "Returns the details of a given role.",
+        "operationId": "Roles_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "RoleKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role key to retrieve."
+          },
+          {
+            "name": "IncludeEnvPermissions",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of environment permissions for role."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record of Role",
+            "schema": {
+              "$ref": "#/definitions/Role"
+            }
+          },
+          "403": {
+            "description": "User doesn't have permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Role not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "/roles"
+        ],
+        "description": "Updates a role with the specified permissions.",
+        "operationId": "Roles_Update",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "RoleKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role key to update."
+          },
+          {
+            "name": "Role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Role"
+            },
+            "description": "The role to be update."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role updated with success.",
+            "schema": {
+              "type": "string",
+              "default": "",
+              "description": "The key of the updated role."
+            }
+          },
+          "400": {
+            "description": "Failed to update role because invalid role name, role is protected, wrong combination of infrastructure and manage teams flags or not defined/wrong permissions for all environments.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the role.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Role not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "/roles"
+        ],
+        "description": "Deletes a role.",
+        "operationId": "Roles_Delete",
+        "parameters": [
+          {
+            "name": "RoleKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role key to delete."
+          },
+          {
+            "name": "UsersNewRoleKey",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Indicates the role that should replace the deleted role, for the users that have this role assigned (both as defaullt, application and team role). Needed if there are users with the role assigned."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Role deleted with success."
+          },
+          "400": {
+            "description": "Role can't be deleted because it is reserved.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to delete the role.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Role not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/roles/permissionlevels/": {
+      "get": {
+        "tags": [
+          "/roles"
+        ],
+        "description": "Gets available permission levels.",
+        "operationId": "Roles_PermissionLevels",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of permission levels.",
+            "schema": {
+              "$ref": "#/definitions/PermissionLevels"
+            }
+          },
+          "403": {
+            "description": "No permissions to manage users and roles.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/teams/": {
+      "get": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Lists all the teams.",
+        "operationId": "Teams_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "IncludeUsers",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of users that belong to the team."
+          },
+          {
+            "name": "IncludeApplications",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of applications that belong to the team."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Teams",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Team"
+              },
+              "description": "A list of Team records including Users and Applications sub-lists, if requested."
+            }
+          },
+          "204": {
+            "description": "No teams defined"
+          },
+          "403": {
+            "description": "User has no permissions to retrieve teams list.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Creates a team with the specified details. The operation only creates the team. Users and Applications should be associated using specific endpoints.",
+        "operationId": "Teams_Create",
+        "parameters": [
+          {
+            "name": "Team",
+            "in": "body",
+            "required": true,
+            "description": "The team to be created.",
+            "schema": {
+              "$ref": "#/definitions/Team"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Team created with success.",
+            "schema": {
+              "$ref": "#/definitions/Team"
+            }
+          },
+          "400": {
+            "description": "Failed to create team due to invalid team name.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to create a new team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/teams/{TeamKey}/": {
+      "get": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Returns the details of a given team.",
+        "operationId": "Teams_Get",
+        "parameters": [
+          {
+            "name": "TeamKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Team key to retrieve."
+          },
+          {
+            "name": "IncludeUsers",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of users that belong to the team."
+          },
+          {
+            "name": "IncludeApplications",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of applications that belong to the team."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record of Team",
+            "schema": {
+              "$ref": "#/definitions/Team"
+            }
+          },
+          "403": {
+            "description": "User don't have permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Updates a team with the specified details. The operation only affects the Team details. Users and Applications should be associated or dissociated using specific endpoints.",
+        "operationId": "Teams_Update",
+        "parameters": [
+          {
+            "name": "TeamKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Team key to update."
+          },
+          {
+            "name": "Team",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Team"
+            },
+            "description": "The team to be updated."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team updated with success.",
+            "schema": {
+              "$ref": "#/definitions/Team"
+            }
+          },
+          "400": {
+            "description": "Failed to update team due to invalid team name.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Deletes a team.",
+        "operationId": "Teams_Delete",
+        "parameters": [
+          {
+            "name": "TeamKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Team key to delete."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Team deleted with success."
+          },
+          "403": {
+            "description": "No permissions to delete a team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/teams/{TeamKey}/applications/": {
+      "post": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Adds the specified application to a given team.",
+        "operationId": "Teams_AddApplication",
+        "parameters": [
+          {
+            "name": "TeamKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the team where the add the applications."
+          },
+          {
+            "name": "Application",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplicationShortInfo"
+            },
+            "description": "The application information to be added."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Application added with success."
+          },
+          "400": {
+            "description": "Failed to add application to team because application doesn't exist.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/teams/{TeamKey}/applications/{ApplicationKey}": {
+      "delete": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Removes application from the given team.",
+        "operationId": "Teams_RemApplication",
+        "parameters": [
+          {
+            "name": "TeamKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The team unique identifier."
+          },
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The application unique identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Application removed with success."
+          },
+          "400": {
+            "description": "Failed to remove application to team because application doesn't exist.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Team or application not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/teams/{TeamKey}/users/": {
+      "post": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Adds a user to a team with a specified role.",
+        "operationId": "Teams_AddUser",
+        "parameters": [
+          {
+            "name": "TeamKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the team where the add the user."
+          },
+          {
+            "name": "UserRole",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserRoleShortInfo"
+            },
+            "description": "The user and role information to be added."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User added with success."
+          },
+          "400": {
+            "description": "Failed to add user to team because user doesn't exist or role doesn't exist.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/teams/{TeamKey}/users/{UserKey}/": {
+      "delete": {
+        "tags": [
+          "/teams"
+        ],
+        "description": "Removes a user from the given team",
+        "operationId": "Teams_RemUser",
+        "parameters": [
+          {
+            "name": "TeamKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the team where the remove the user."
+          },
+          {
+            "name": "UserKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "",
+            "description": "The key of the user to be removed."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User removed with success."
+          },
+          "400": {
+            "description": "Failed to remove user from team because user doesn't exist or role doesn't exist.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the team.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "Team or user not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/users/": {
+      "get": {
+        "tags": [
+          "/users"
+        ],
+        "description": "Lists all the users. By default shows only active users.",
+        "operationId": "Users_List",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "IncludeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of inactive users."
+          },
+          {
+            "name": "IncludeTeams",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of teams that the users belong to."
+          },
+          {
+            "name": "IncludeApplicationRoles",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of applications that the users are associated with."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Users",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              },
+              "description": "A list of User records."
+            }
+          },
+          "204": {
+            "description": "No Users defined"
+          },
+          "403": {
+            "description": "User has no permissions to retrieve users list.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "/users"
+        ],
+        "description": "Creates a user with the specified details. The operation only creates the user. Teams and Applications should be associated using specific endpoints.",
+        "operationId": "Users_Create",
+        "parameters": [
+          {
+            "name": "User",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            },
+            "description": "The user to be created."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created with success.",
+            "schema": {
+              "type": "string",
+              "default": "",
+              "description": "The key of the newly created user."
+            }
+          },
+          "400": {
+            "description": "Failed to create user due to invalid username, name or role.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to create a new user.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/users/{UserKey}/": {
+      "get": {
+        "tags": [
+          "/users"
+        ],
+        "description": "Returns the details of a given user.",
+        "operationId": "Users_Get",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "UserKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User key to retrieve."
+          },
+          {
+            "name": "includeTeams",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of teams that the user belong to."
+          },
+          {
+            "name": "includeApplicationRoles",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "description": "Defines if it is to include a list of applications that the user is associated with."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record of User",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "403": {
+            "description": "User doesn't have permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "/users"
+        ],
+        "description": "Updates a user with the specified details. The operation only updates the user details. Teams and Applications should be associated using specific endpoints.",
+        "operationId": "Users_Update",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "UserKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User key to update."
+          },
+          {
+            "name": "User",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            },
+            "description": "The user to be updated."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated with success.",
+            "schema": {
+              "type": "string",
+              "default": "",
+              "description": "The key of the updated user."
+            }
+          },
+          "400": {
+            "description": "Failed to update user due to invalid username, name or role.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the user.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/users/{UserKey}/setpassword/": {
+      "post": {
+        "tags": [
+          "/users"
+        ],
+        "description": "Allows to change a password of a given user.",
+        "operationId": "Users_SetPassword",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "UserKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User key to update."
+          },
+          {
+            "name": "Password",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Password"
+            },
+            "description": "The new password value."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User password updated with success."
+          },
+          "400": {
+            "description": "Failed to change password because password is invalid.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to update the user password.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "405": {
+            "description": "Failed to change password because external authentication provider is in use.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/users/{UserKey}/applications/": {
+      "post": {
+        "tags": [
+          "/users"
+        ],
+        "description": "Grants a given role to the given application to the user.",
+        "operationId": "Users_GrantApp",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "UserKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User key to grant permissions."
+          },
+          {
+            "name": "ApplicationRole",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplicationRole"
+            },
+            "description": "The key of the application and Role to grant permissions."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Permissions granted with success."
+          },
+          "400": {
+            "description": "Failed to add application to user because application or role are invalid.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "403": {
+            "description": "No permissions to change User permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    },
+    "/users/{UserKey}/applications/{ApplicationKey}/": {
+      "delete": {
+        "tags": [
+          "/users"
+        ],
+        "description": "Revokes user's role in application permission.",
+        "operationId": "Users_RevokeApp",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "UserKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User key to grant permissions."
+          },
+          {
+            "name": "ApplicationKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The key of the application to grant permissions."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Permissions revoked with success."
+          },
+          "403": {
+            "description": "No permissions to change User permissions.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "404": {
+            "description": "User or permission not found.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          },
+          "500": {
+            "description": "Internal error raised.",
+            "schema": {
+              "$ref": "#/definitions/Exception"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Application": {
+      "description": "An application with its details and its status in the environments were it is running.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "readOnly": true,
+          "description": "Application unique identifier."
+        },
+        "Name": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the application."
+        },
+        "Kind": {
+          "type": "string",
+          "default": "",
+          "description": "Identifies the kind of application. [Mobile|WebResponsive]"
+        },
+        "Team": {
+          "type": "string",
+          "default": "",
+          "description": "The team that owns the application."
+        },
+        "Description": {
+          "type": "string",
+          "default": "",
+          "description": "Description of the application."
+        },
+        "URLPath": {
+          "type": "string",
+          "default": "",
+          "readOnly": true,
+          "description": "Relative URL path of the application, starting from the hostname."
+        },
+        "IconHash": {
+          "type": "string",
+          "default": "",
+          "readOnly": true,
+          "description": "Hash of the application icon. Can be used to detect changes in the application icon."
+        },
+        "IconURL": {
+          "type": "string",
+          "default": "",
+          "readOnly": true,
+          "description": "The URL for the application icon."
+        },
+        "IsSystem": {
+          "type": "boolean",
+          "example": false,
+          "readOnly": true,
+          "description": "Indicates if the application is a built-in component of the AgilePlatform (e.g. ServiceCenter, LifeTime, ...)."
+        },
+        "AppStatusInEnvs": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/AppStatusInEnv_v2"
+          },
+          "description": "Information about the status of the application in each environment it is running."
+        }
+      },
+      "required": [
+        "Name",
+        "Kind"
+      ]
+    },
+    "ApplicationShortInfo": {
+      "description": "A simplification of application structure.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Application unique identifier."
+        },
+        "Name": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the application."
+        }
+      },
+      "required": [
+        "Key"
+      ]
+    },
+    "ApplicationConflict": {
+      "description": "A depoyment conflict.",
+      "type": "object",
+      "properties": {
+        "Message": {
+          "type": "string",
+          "default": "",
+          "description": "Description of the conflict."
+        },
+        "ProducerApplicationOperation": {
+          "$ref": "#/definitions/ApplicationOperation"
+        },
+        "ConsumerApplicationOperation": {
+          "$ref": "#/definitions/ApplicationOperation"
+        },
+        "ModuleConflict": {
+          "$ref": "#/definitions/ModuleConflict"
+        }
+      }
+    },
+    "ApplicationConflictListTextListDeployment_v2Record": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "Deployment": {
+          "$ref": "#/definitions/Deployment_v2"
+        },
+        "ApplicationsToRedeploy": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "ApplicationConflicts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ApplicationConflict"
+          }
+        }
+      }
+    },
+    "ApplicationOperation": {
+      "description": "Operation executed in the deployment over the application.",
+      "type": "object",
+      "properties": {
+        "ApplicationKey": {
+          "type": "string",
+          "default": "",
+          "description": "Application unique identifier."
+        },
+        "ApplicationVersionKey": {
+          "type": "string",
+          "default": "",
+          "description": "Application Version unique identifier."
+        },
+        "DeploymentOperation": {
+          "type": "string",
+          "default": "",
+          "description": "Label of the operation to be performed. Example: Deploy 1.5."
+        }
+      }
+    },
+    "ApplicationOperation_v2": {
+      "description": "Operation executed in the deployment over the application.",
+      "type": "object",
+      "properties": {
+        "ApplicationKey": {
+          "type": "string",
+          "default": "",
+          "description": "Application unique identifier."
+        },
+        "ApplicationVersionKey": {
+          "type": "string",
+          "default": "",
+          "description": "Application Version unique identifier."
+        },
+        "DeploymentOperation": {
+          "type": "string",
+          "default": "",
+          "description": "Label of the operation to be performed. Example: Deploy 1.5."
+        },
+        "DeploymentZoneKey": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment Zone unique identifier"
+        }
+      }
+    },
+    "ApplicationVersion_v2": {
+      "description": "Information about a specific version of an application and the versions of its modules.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Application version unique identifier."
+        },
+        "ApplicationKey": {
+          "type": "string",
+          "default": "",
+          "description": "Application unique identifier."
+        },
+        "Version": {
+          "type": "string",
+          "default": "",
+          "description": "Version of the application."
+        },
+        "ChangeLog": {
+          "type": "string",
+          "default": "",
+          "description": "Change Log associated to this Application Version."
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "When was the Application Version created."
+        },
+        "InUse": {
+          "type": "boolean",
+          "example": false,
+          "description": "Defines if the Application Version is being used."
+        },
+        "MobileVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MobileVersion"
+          },
+          "description": "List of mobile versions."
+        },
+        "PrimaryColor": {
+          "type": "string",
+          "default": "",
+          "description": "The primary color of the application interface."
+        },
+        "NativeHash": {
+          "type": "string",
+          "default": "",
+          "description": "The native has relative to the mobile platform."
+        },
+        "ModuleVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleVersion_v2"
+          },
+          "description": "List of module versions."
+        }
+      },
+      "required": [
+        "Key"
+      ]
+    },
+    "ApplicationVersionCreate": {
+      "description": "A structure holding the new version name for the application and for its native applications, if applicable.",
+      "type": "object",
+      "properties": {
+        "ChangeLog": {
+          "type": "string",
+          "default": "",
+          "description": "Change log of the version to be created."
+        },
+        "Version": {
+          "type": "string",
+          "default": "",
+          "description": "Version of the application."
+        },
+        "MobileVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MobileVersion"
+          },
+          "description": "List of mobile versions."
+        },
+        "ModuleVersionKeys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          },
+          "description": "[DEPRECATED] List of module version keys to validate if the current state of the application is still the expected. This parameter was deprecated on LifeTime Feb 2019 Release, there is no need to pass the module version keys. If the module version keys are passed, they will still be validated."
+        }
+      }
+    },
+    "ApplicationVersionKeyDeploymentZoneKeyRecordListTextTextTextRecord": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "Notes": {
+          "type": "string",
+          "default": ""
+        },
+        "SourceEnvironmentKey": {
+          "type": "string",
+          "default": ""
+        },
+        "TargetEnvironmentKey": {
+          "type": "string",
+          "default": ""
+        },
+        "ApplicationOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TextTextRecord"
+          }
+        }
+      },
+      "required": [
+        "Notes",
+        "SourceEnvironmentKey",
+        "TargetEnvironmentKey",
+        "ApplicationOperations"
+      ]
+    },
+    "AppStatusInEnv_v2": {
+      "description": "Status of application in a given environment.",
+      "type": "object",
+      "properties": {
+        "EnvironmentKey": {
+          "type": "string",
+          "default": "",
+          "description": "Environment unique identifier."
+        },
+        "BaseApplicationVersionKey": {
+          "type": "string",
+          "default": "",
+          "description": "Base application version unique identifier. If app is not modified in environment, this is the application version deployed."
+        },
+        "IsModified": {
+          "type": "boolean",
+          "example": false,
+          "description": "True if the application has been changed since the last tag, false otherwise."
+        },
+        "IsModifiedReason": {
+          "type": "string",
+          "default": "",
+          "description": "Indicates the application status."
+        },
+        "IsModifiedMessage": {
+          "type": "string",
+          "default": "",
+          "description": "Indicates the application status."
+        },
+        "ConsistencyStatus": {
+          "type": "string",
+          "default": "",
+          "description": "Indicates the application consistency status."
+        },
+        "ConsistencyStatusMessages": {
+          "type": "string",
+          "default": "",
+          "description": "Messages regarding the consistency status of the application."
+        },
+        "MobileAppsStatus": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MobileAppStatusInEnv"
+          },
+          "description": "Status of mobile apps in environment."
+        },
+        "ModuleStatusInEnvs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleStatusInEnv"
+          },
+          "description": "Status of modules in environment."
+        },
+        "DeploymentZoneKey": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment Zone unique identifier"
+        }
+      }
+    },
+    "Deployment_v2": {
+      "description": "Deployment information with the operations executed.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment unique identifier."
+        },
+        "SourceEnvironmentKey": {
+          "type": "string",
+          "default": "",
+          "description": "Source environment unique identifier."
+        },
+        "TargetEnvironmentKey": {
+          "type": "string",
+          "default": "",
+          "description": "Target environment unique identifier."
+        },
+        "Notes": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment notes."
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "Date and time when the deployment plan was created."
+        },
+        "CreatedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who created the deployment plan."
+        },
+        "CreatedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who created the deployment plan."
+        },
+        "SavedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "The date and time when the deployment plan was saved."
+        },
+        "SavedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who last saved the deployment plan."
+        },
+        "SavedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who last saved the deployment plan."
+        },
+        "StartedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "The date and time when the deployment started."
+        },
+        "StartedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who started the deployment."
+        },
+        "StartedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who started the deployment."
+        },
+        "AbortedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "The date and time when the deployment was aborted."
+        },
+        "AbortedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who aborted the deployment."
+        },
+        "AbortedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who aborted the deployment."
+        },
+        "ApplicationOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ApplicationOperation_v2"
+          },
+          "description": "List of Application Operations included in the deployment."
+        }
+      }
+    },
+    "DeploymentData_v2": {
+      "description": "Deployment information with the operations executed.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment unique identifier."
+        },
+        "SourceEnvironmentKey": {
+          "type": "string",
+          "default": "",
+          "description": "Source environment unique identifier."
+        },
+        "TargetEnvironmentKey": {
+          "type": "string",
+          "default": "",
+          "description": "Target environment unique identifier."
+        },
+        "Notes": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment notes."
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "Date and time when the deployment plan was created."
+        },
+        "CreatedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who created the deployment plan."
+        },
+        "CreatedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who created the deployment plan."
+        },
+        "SavedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "The date and time when the deployment plan was saved."
+        },
+        "SavedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who last saved the deployment plan."
+        },
+        "SavedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who last saved the deployment plan."
+        },
+        "StartedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "The date and time when the deployment started."
+        },
+        "StartedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who started the deployment."
+        },
+        "StartedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who started the deployment."
+        },
+        "AbortedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "The date and time when the deployment was aborted."
+        },
+        "AbortedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user who aborted the deployment."
+        },
+        "AbortedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user who aborted the deployment."
+        },
+        "ApplicationOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TextTextRecord"
+          },
+          "description": "List of Application Operations included in the deployment."
+        }
+      }
+    },
+    "DeploymentMessage": {
+      "description": "Message from a deployment operation log.",
+      "type": "object",
+      "properties": {
+        "Instant": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "Date and time when the message was logged."
+        },
+        "Message": {
+          "type": "string",
+          "default": "",
+          "description": "Details of the message."
+        }
+      }
+    },
+    "DeploymentMessageListTextTextRecord": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "DeploymentStatus": {
+          "type": "string",
+          "default": ""
+        },
+        "Info": {
+          "type": "string",
+          "default": ""
+        },
+        "DeploymentLog": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeploymentMessage"
+          }
+        }
+      },
+      "required": [
+        "DeploymentStatus",
+        "Info",
+        "DeploymentLog"
+      ]
+    },
+    "DeploymentTechnology_v2": {
+      "description": "Deployment Hosting technology of the Deployment Zone.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment Technology unique identifier."
+        },
+        "Name": {
+          "type": "string",
+          "default": "",
+          "description": "Name of deployment technology"
+        }
+      }
+    },
+    "DeploymentZone_v2": {
+      "description": "Deployment Zone of an environment.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Deployment Zone unique identifier."
+        },
+        "Name": {
+          "type": "string",
+          "default": "",
+          "description": "Name of deployment zone"
+        },
+        "IsDefault": {
+          "type": "boolean",
+          "example": false,
+          "description": "True if the deployment zone is the default one in the environment"
+        },
+        "DeploymentTechnology": {
+          "$ref": "#/definitions/DeploymentTechnology_v2"
+        }
+      }
+    },
+    "DownloadLink": {
+      "description": "The link for the application binary file.",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "default": "",
+          "description": "The link for the application binary file.\n"
+        },
+        "expires": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "The expiration date and time of the returned link."
+        }
+      }
+    },
+    "Environment": {
+      "description": "An environment and its information.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Unique identifier of the environment."
+        },
+        "Name": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the environment."
+        },
+        "OSVersion": {
+          "type": "string",
+          "default": "",
+          "description": "Platform Server version. [X.X.X.X]"
+        },
+        "Order": {
+          "type": "integer",
+          "example": 0,
+          "format": "int32",
+          "description": "The order of the environment as registered in Lifetime."
+        },
+        "HostName": {
+          "type": "string",
+          "default": "",
+          "description": "Hostname of the environment as registered."
+        },
+        "UseHTTPS": {
+          "type": "boolean",
+          "example": false,
+          "description": "Indicates if connections to the environment are made using HTTPS."
+        },
+        "EnvironmentType": {
+          "type": "string",
+          "default": "",
+          "description": "Indicates the type of the environment. [Development | Test | Production]"
+        },
+        "NumberOfFrontEnds": {
+          "type": "integer",
+          "example": 0,
+          "format": "int32",
+          "description": "Number of front-end servers in the environment."
+        },
+        "ApplicationServerType": {
+          "type": "string",
+          "default": "",
+          "description": "Stack of the application server. [.NET | JAVA]"
+        },
+        "ApplicationServer": {
+          "type": "string",
+          "default": "",
+          "description": "Application server in use. [IIS | JBoss | WebLogic]"
+        },
+        "DatabaseProvider": {
+          "type": "string",
+          "default": "",
+          "description": "Type of database provider. [SqlServer | Oracle]"
+        },
+        "IsCloudEnvironment": {
+          "type": "boolean",
+          "example": false,
+          "description": "Indicates if the environment is running on a cloud service."
+        }
+      }
+    },
+    "EnvironmentPermission": {
+      "description": "Definition of Environment Permissions",
+      "type": "object",
+      "properties": {
+        "environmentKey": {
+          "type": "string",
+          "description": "Key of the environment that refers to the permission."
+        },
+        "environmentName": {
+          "type": "string",
+          "description": "Name of the environment that refers to the permission."
+        },
+        "level": {
+          "type": "integer",
+          "description": "Level of permission."
+        },
+        "levelLabel": {
+          "type": "string",
+          "description": "Short description of the permission level."
+        },
+        "createApplications": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allows to create new applications."
+        },
+        "addDependenciesToSystem": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allows to add depedencies to System application."
+        }
+      }
+    },
+    "Exception": {
+      "type": "object",
+      "properties": {
+        "Errors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Full detail of the error"
+          }
+        },
+        "StatusCode": {
+          "type": "integer",
+          "default": 500,
+          "description": "Status code raised with the error."
+        }
+      }
+    },
+    "MobileAppStatusInEnv": {
+      "description": "Status of mobile application in a given environment.",
+      "type": "object",
+      "properties": {
+        "EnvironmentKey": {
+          "type": "string",
+          "default": "",
+          "description": "Environment unique identifier."
+        },
+        "NativePlatform": {
+          "type": "string",
+          "default": "",
+          "description": "Name of native platform. [Android | iOS]"
+        },
+        "VersionNumber": {
+          "type": "string",
+          "default": "",
+          "description": "The version number, like for example 1.5.4, of the native build. It is used to be able to map the version to the version in the Andoid or iOS store."
+        },
+        "HasBinaryAvailable": {
+          "type": "boolean",
+          "example": false,
+          "description": "True if the binary of the application is available for the current configuration."
+        },
+        "IsConfigured": {
+          "type": "boolean",
+          "example": false,
+          "description": "True if the application is configured."
+        },
+        "IsConfigurationChanged": {
+          "type": "boolean",
+          "example": false,
+          "description": "True if the configuration of the Mobile Application has changed in the environment."
+        },
+        "IsModified": {
+          "type": "boolean",
+          "example": false,
+          "description": "True if the Native Hash of the Mobile Application does not match the one in the AppVersionNativeBuild baseline."
+        }
+      }
+    },
+    "MobileVersion": {
+      "description": "A mobile version and its information.",
+      "type": "object",
+      "properties": {
+        "NativePlatform": {
+          "type": "string",
+          "default": "",
+          "description": "Name of native platform. [Android | iOS]"
+        },
+        "VersionNumber": {
+          "type": "string",
+          "default": "",
+          "description": "The version number, like for example 1.5.4, of the native build. It is used to be able to map the version to the version in the Andoid or iOS store."
+        },
+        "VersionDescription": {
+          "type": "string",
+          "default": "",
+          "description": "The description of the mobile version."
+        }
+      }
+    },
+    "Module": {
+      "description": "Module information and the status in the environments where the modules are running.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Module unique identifier."
+        },
+        "Name": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the module."
+        },
+        "Description": {
+          "type": "string",
+          "default": "",
+          "description": "Description of the module."
+        },
+        "Kind": {
+          "type": "string",
+          "default": "",
+          "description": "Module type (eSpace or Extension)."
+        },
+        "ModuleStatusInEnv": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleStatusInEnv"
+          },
+          "description": "Status of the module in environments"
+        }
+      }
+    },
+    "ModuleConflict": {
+      "description": "A module conflict.",
+      "type": "object",
+      "properties": {
+        "ProducerModuleKey": {
+          "type": "string",
+          "default": "",
+          "description": "Producer Module unique identifier."
+        },
+        "ConsumerModuleKey": {
+          "type": "string",
+          "default": "",
+          "description": "Consumer Module unique identifier."
+        },
+        "TotalRequiredElements": {
+          "type": "integer",
+          "example": 0,
+          "format": "int32",
+          "description": "Total number of required elements."
+        },
+        "ConflictType": {
+          "type": "string",
+          "default": "",
+          "description": "Type of conflict. [Producer Module Missing|Producer Element Missing|Producer Element Incompatible|Consumer Module Outdated|Newer Producer Module Available|IncompatiblePlatformServer|ConsumerModuleMoved|ProducerModuleMoved|NameColision]"
+        }
+      }
+    },
+    "ModuleStatusInEnv": {
+      "description": "Status of module in a given environment.",
+      "type": "object",
+      "properties": {
+        "ApplicationKey": {
+          "type": "string",
+          "default": "",
+          "description": "Application unique identifier."
+        },
+        "EnvironmentKey": {
+          "type": "string",
+          "default": "",
+          "description": "Environment unique identifier."
+        },
+        "ModuleVersionKey": {
+          "type": "string",
+          "default": "",
+          "description": "Module version unique identifier."
+        },
+        "ConsistencyStatus": {
+          "type": "string",
+          "default": "",
+          "description": "Indicates the module consistency status."
+        },
+        "ConsistencyStatusMessages": {
+          "type": "string",
+          "default": "",
+          "description": "Messages regarding the consistency status of the module."
+        }
+      }
+    },
+    "ModuleVersion_v2": {
+      "description": "A module version and its information.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Module version unique identifier."
+        },
+        "ModuleKey": {
+          "type": "string",
+          "default": "",
+          "description": "Module unique identifier."
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2014-12-31T23:59:59.938Z",
+          "description": "Date and time of the module version creation."
+        },
+        "CreatedBy": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the user that created the version."
+        },
+        "CreatedByUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Username of the user that created the version."
+        },
+        "GeneralHash": {
+          "type": "string",
+          "default": "",
+          "description": "Non-unique hash of the module version. Can be used to validate if two module versions have semantic differences."
+        },
+        "DirectUpgradeFromHash": {
+          "type": "string",
+          "default": "",
+          "description": "If this module version is the result of a direct upgrade of another version, then this field contains the key of that version"
+        }
+      }
+    },
+    "PermissionLevels": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "integer",
+          "description": "Value that identifies the permission level."
+        },
+        "levelLabel": {
+          "type": "string",
+          "description": "Short description of the permission level."
+        },
+        "description": {
+          "type": "string",
+          "description": "Full description of the permission level."
+        }
+      }
+    },
+    "Role": {
+      "description": "Full definition of a role.",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Identifier of a role.",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of a role"
+        },
+        "manageInfrastructure": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allows manage the infrastructure."
+        },
+        "manageTeams": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allows to manage teams and roles."
+        },
+        "environmentPermissions": {
+          "type": "array",
+          "description": "Definition of permission levels per environment.",
+          "items": {
+            "$ref": "#/definitions/EnvironmentPermission"
+          }
+        }
+      }
+    },
+    "Team": {
+      "description": "Definition of a team",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "default": "",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "default": ""
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        },
+        "users": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/UserRole"
+          }
+        },
+        "applications": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/ApplicationShortInfo"
+          }
+        }
+      }
+    },
+    "Template": {
+      "description": "Template of an environment.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "Template unique identifier."
+        },
+        "Name": {
+          "type": "string",
+          "default": "",
+          "description": "Name of template."
+        },
+        "Description": {
+          "type": "string",
+          "default": "",
+          "description": "Description of template."
+        },
+        "ApplicationKind": {
+          "type": "string",
+          "default": "",
+          "description": "Type of the application [Web|Mobile|Service|Reactive]."
+        }
+      }
+    },
+    "TextRecord": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "ApplicationVersionKey": {
+          "type": "string",
+          "default": "",
+          "description": "The key of the newly created application version."
+        }
+      },
+      "required": [
+        "ApplicationVersionKey"
+      ]
+    },
+    "TextRecord2": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "ApplicationKey": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "TextTextRecord": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "ApplicationVersionKey": {
+          "type": "string",
+          "default": ""
+        },
+        "DeploymentZoneKey": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      "required": [
+        "ApplicationVersionKey",
+        "DeploymentZoneKey"
+      ]
+    },
+    "User": {
+      "description": "Definition of a user. Also includes the teams to which the user belongs and the roles in specific applications.",
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "default": "",
+          "description": "readonly"
+        },
+        "Username": {
+          "type": "string",
+          "default": ""
+        },
+        "Name": {
+          "type": "string",
+          "default": ""
+        },
+        "Email": {
+          "type": "string",
+          "default": ""
+        },
+        "IsActive": {
+          "type": "boolean",
+          "default": "true"
+        },
+        "RoleKey": {
+          "type": "string",
+          "default": ""
+        },
+        "RoleName": {
+          "type": "string",
+          "default": "",
+          "description": "readonly"
+        },
+        "ApplicationRoles": {
+          "type": "array",
+          "default": "",
+          "items": {
+            "$ref": "#/definitions/ApplicationRole"
+          }
+        },
+        "Teams": {
+          "type": "array",
+          "default": "",
+          "items": {
+            "$ref": "#/definitions/TeamRole"
+          }
+        }
+      }
+    },
+    "UserRole": {
+      "description": "Pair User and Role information.",
+      "type": "object",
+      "properties": {
+        "UserKey": {
+          "type": "string",
+          "default": ""
+        },
+        "Name": {
+          "type": "string",
+          "default": ""
+        },
+        "Username": {
+          "type": "string",
+          "default": ""
+        },
+        "RoleKey": {
+          "type": "string",
+          "default": ""
+        },
+        "RoleName": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "TeamRole": {
+      "description": "Pair Team and Role information.",
+      "type": "object",
+      "properties": {
+        "TeamKey": {
+          "type": "string",
+          "default": ""
+        },
+        "TeamName": {
+          "type": "string",
+          "default": ""
+        },
+        "RoleKey": {
+          "type": "string",
+          "default": ""
+        },
+        "RoleName": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "UserRoleShortInfo": {
+      "description": "Pair User Key and Role Key minimal information.",
+      "type": "object",
+      "properties": {
+        "userKey": {
+          "type": "string",
+          "default": ""
+        },
+        "roleKey": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "ApplicationRole": {
+      "description": "Represents a set of an application and a role.",
+      "type": "object",
+      "properties": {
+        "applicationKey": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string"
+        },
+        "roleKey": {
+          "type": "string"
+        },
+        "roleName": {
+          "type": "string"
+        }
+      }
+    },
+    "NewApplication": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "TemplateKey": {
+          "type": "string",
+          "default": ""
+        },
+        "TeamKey": {
+          "type": "string",
+          "default": ""
+        },
+        "Name": {
+          "type": "string",
+          "default": ""
+        },
+        "Description": {
+          "type": "string",
+          "default": ""
+        },
+        "Color": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      "required": [
+        "TemplateKey",
+        "TeamKey",
+        "Name",
+        "Color"
+      ]
+    },
+    "Password": {
+      "description": "Definition of a password.",
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "default": "",
+          "description": "Password value."
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "/applications"
+    },
+    {
+      "name": "/environments"
+    },
+    {
+      "name": "/deployments"
+    },
+    {
+      "name": "/modules"
+    },
+    {
+      "name": "/roles"
+    },
+    {
+      "name": "/teams"
+    }
+  ]
+}
